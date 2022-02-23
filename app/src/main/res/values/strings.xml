@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Exchange Rates</string>
+    <string name="no_records_available">No records available</string>
+</resources>
