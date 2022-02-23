@@ -2,6 +2,7 @@ package dfg.exchangerates
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.gson.JsonObject
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,7 +27,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         Timber.plant(Timber.DebugTree())
 
