@@ -4,7 +4,7 @@ import dfg.exchangerates.data.model.ExchangeRates
 
 interface ExchangeRateRepository {
 
-    fun getExchangeRates() : ExchangeRates.Rates
+    fun getExchangeRates() : ExchangeRates.Rates?
 
-    fun getExchangePairs() : ExchangeRates.Pairs
+    fun getExchangePairs() : ExchangeRates.Pairs?
 }

@@ -1,41 +1,45 @@
 package dfg.exchangerates.domain.repo
 
 import dfg.exchangerates.data.model.ExchangeRates
+import dfg.exchangerates.data.network.ExchangeRatesAPI
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableSingleObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 class ExchangeRatesRepositoryImpl(
+    private val exchangeRatesAPI: ExchangeRatesAPI
 ) : ExchangeRateRepository {
 
     private val compositeDisposable = CompositeDisposable()
 
-    fun getExchangeRates() {
+    override fun getExchangeRates() : ExchangeRates.Rates? {
+        var list: ExchangeRates.Rates? = null
         compositeDisposable.add(
-            exchangeRatesApiService.getExchangeRates()
+            exchangeRatesAPI.getExchangeRates()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableSingleObserver<ExchangeRates.Rates>() {
                     override fun onSuccess(t: ExchangeRates.Rates) {
-                        exchangeRatesResponse.value = t
+                        list = t
                     }
-
                     override fun onError(e: Throwable) {
                         e.printStackTrace()
                     }
                 })
         )
+        return list
     }
 
-    fun getExchangePairs() {
+    override fun getExchangePairs() : ExchangeRates.Pairs? {
+        var list: ExchangeRates.Pairs? = null
         compositeDisposable.add(
-            exchangeRatesApiService.getExchangePairs()
+            exchangeRatesAPI.getExchangePairs()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableSingleObserver<ExchangeRates.Pairs>() {
                     override fun onSuccess(t: ExchangeRates.Pairs) {
-                        exchangePairsResponse.value = t
+                        list = t
                     }
 
                     override fun onError(e: Throwable) {
@@ -43,5 +47,6 @@ class ExchangeRatesRepositoryImpl(
                     }
                 })
         )
+        return list
     }
 }

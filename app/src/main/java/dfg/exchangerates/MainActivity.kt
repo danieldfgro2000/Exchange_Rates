@@ -33,8 +33,6 @@ class MainActivity : AppCompatActivity() {
         mExchangeRatesViewModel = ViewModelProvider(this)
                 .get(ExchangeRatesViewModel::class.java)
 
-        mExchangeRatesViewModel.getExchangeRates()
-        mExchangeRatesViewModel.getExchangePairs()
 
         mExchangeRatesViewModel.exchangeRatesResponse.observe(this){
             e("Rates = $it")
