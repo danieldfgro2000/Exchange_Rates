@@ -6,21 +6,21 @@ import com.google.gson.annotations.SerializedName
 object ExchangeRates {
 
     data class  Rates (
-        @SerializedName("Rates") val rates: List<Rate>
+        val rates: List<Rate>
     )
 
     data class Rate (
-        @SerializedName("from") val from: String,
-        @SerializedName("to") val to: String,
-        @SerializedName("rate") val rate: String
+        val from: String,
+        val to: String,
+        val rate: String
     )
 
     data class Pairs (
-        @SerializedName("Pairs") val pairs: List<Pair>
+        val pairs: List<Pair>
     )
 
     data class Pair (
-        @SerializedName("from") val from: String,
-        @SerializedName("to") val to: String
+        val from: String,
+        val to: String
     )
 }

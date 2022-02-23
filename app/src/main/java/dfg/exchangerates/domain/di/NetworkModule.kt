@@ -13,6 +13,7 @@ import dfg.exchangerates.utils.Constants
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -20,7 +21,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class NetworkModule {
-
 
     @Singleton
     @Provides
@@ -44,16 +44,13 @@ class NetworkModule {
         val retrofit = Retrofit.Builder()
             .baseUrl(Constants.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
             .client(okHttpClient)
             .build()
         return retrofit.create(ExchangeRatesAPI::class.java)
     }
 
-//    @Singleton
-//    @Provides
-//    fun provideExchangeRatesApiService() : ExchangeRatesApiService {
-//        return ExchangeRatesApiService()
-//    }
+
 
     @Singleton
     @Provides
