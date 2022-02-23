@@ -2,6 +2,7 @@ package dfg.exchangerates
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.gson.Gson
@@ -43,14 +44,12 @@ class MainActivity : AppCompatActivity() {
         mExchangeRatesViewModel = ViewModelProvider(this)
                 .get(ExchangeRatesViewModel::class.java)
 
+        hideRecyclerView()
 
-        mExchangeRatesViewModel.exchangeRatesResponse.observe(this){
+        mExchangeRatesViewModel.exchangePairsWithRate.observe(this){
             initRecyclerView()
-            exchangeRatesAdapter.differ.submitList(it.rates)
-        }
-
-        mExchangeRatesViewModel.exchangePairsResponse.observe(this) {
-            e("Pairs = $it")
+            showRecyclerView()
+            exchangeRatesAdapter.differ.submitList(it)
         }
     }
 
@@ -60,5 +59,20 @@ class MainActivity : AppCompatActivity() {
             adapter = exchangeRatesAdapter
             setHasFixedSize(false)
         }
+    }
+
+    private fun showRecyclerView() {
+        with(mBinding){
+            rvItemsList.visibility = View.VISIBLE
+            tvNoRecordsAvailable.visibility = View.GONE
+        }
+    }
+
+    private fun hideRecyclerView() {
+        with(mBinding) {
+            rvItemsList.visibility = View.GONE
+            tvNoRecordsAvailable.visibility = View.VISIBLE
+        }
+
     }
 }

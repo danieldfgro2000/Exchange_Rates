@@ -2,6 +2,7 @@ package dfg.exchangerates.presentation.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil

@@ -3,7 +3,7 @@ package dfg.exchangerates.data.model
 object ExchangeRates {
 
     data class  Rates (
-        val rates: List<Rate>
+        var rates: List<Rate>
     )
 
     data class Rate (
