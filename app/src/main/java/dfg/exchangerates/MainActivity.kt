@@ -4,8 +4,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
+import dfg.exchangerates.data.model.ExchangeRates
 import dfg.exchangerates.databinding.ActivityMainBinding
 import dfg.exchangerates.presentation.adapter.ExchangeRatesAdapter
 import dfg.exchangerates.presentation.viewmodel.ExchangeRatesViewModel
@@ -25,6 +30,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var exchangeRatesAdapter: ExchangeRatesAdapter
 
+    @Inject
+    lateinit var gson: Gson
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -37,17 +45,8 @@ class MainActivity : AppCompatActivity() {
 
 
         mExchangeRatesViewModel.exchangeRatesResponse.observe(this){
-            e("Rates = $it")
             initRecyclerView()
-//            val json = JSONObject(it)
-//            try {
-//                val resultArray = json.getJSONArray("rates")
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//            }
-//
-//            exchangeRatesAdapter.differ.submitList()
-
+            exchangeRatesAdapter.differ.submitList(it.rates)
         }
 
         mExchangeRatesViewModel.exchangePairsResponse.observe(this) {
