@@ -103,27 +103,10 @@ class ExchangeRatesViewModel @Inject constructor(
             for (newRates in listRates) {
 
                 var newRate = ""
-                var newTransformation = ExchangeRates.Rate("", "", "")
+                var newTransformation: ExchangeRates.Rate
                 val newTriple = Triple(newRates.from, newRates.to, newRates.rate)
 
                 try {
-//                    if (oldTriple.first == newTriple.second && oldTriple.second != newTriple.first) {
-//                        i("newTriple = $newTriple")
-//                        newRate = String.format(
-//                            Locale.CANADA,
-//                            "%.2f",
-//
-//
-//                            oldTriple.third.toDouble() * newTriple.third.toDouble()
-//
-//
-//                        )
-//                        e("===>   |  new Rate = $newRate from ${oldTriple.second} to ${newTriple.first}")
-//                        newTransformation = ExchangeRates.Rate( oldTriple.second, newTriple.first, newRate)
-//                        if (!newListRates.contains(newTransformation)) newListRates.add(newTransformation)
-//
-//                        e("newlistRates size = ${newListRates.size}")
-//                    }
                     if (oldTriple.second == newTriple.first && oldTriple.first != newTriple.second) {
                         i("newTriple = $newTriple")
                         newRate = String.format(
@@ -131,13 +114,13 @@ class ExchangeRatesViewModel @Inject constructor(
                             "%.2f",
 
 
-                            oldTriple.third.toDouble() * newTriple.third.toDouble()
+                            (oldTriple.third.toDouble() * newTriple.third.toDouble())
 
 
                         )
-                        e("===>    || new Rate = $newRate from ${newTriple.second} to ${oldTriple.first}")
+                        e("===>    || new Rate = $newRate from  ${oldTriple.first} to ${newTriple.second}")
 
-                        newTransformation = ExchangeRates.Rate( newTriple.second, oldTriple.first, newRate )
+                        newTransformation = ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate )
                         if (!newListRates.contains(newTransformation)) newListRates.add(newTransformation)
 
                         e("newlistRates size = ${newListRates.size}")
