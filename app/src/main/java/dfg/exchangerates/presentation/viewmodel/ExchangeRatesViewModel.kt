@@ -11,9 +11,13 @@ import dfg.exchangerates.domain.usecase.GetExchangeRatesUseCase
 import dfg.exchangerates.utils.awaitForServer
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber.Forest.e
+import timber.log.Timber.Forest.w
 import java.io.IOException
+import java.lang.NumberFormatException
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,7 +32,7 @@ class ExchangeRatesViewModel @Inject constructor(
         getExchangePairs()
     }
 
-    private val exchangeRatesResponse = MutableLiveData<ExchangeRates.Rates>()
+
     private val exchangePairsResponse = MutableLiveData<ExchangeRates.Pairs>()
     val exchangePairsWithRate = MutableLiveData<List<ExchangeRates.Rate>>()
 
@@ -37,7 +41,7 @@ class ExchangeRatesViewModel @Inject constructor(
             viewModelScope.launch(IO) {
                 getExchangeRatesUseCase.execute()?.let {
                     viewModelScope.launch(Main) {
-                        exchangeRatesResponse.value = it
+                        listRates = it.rates.toMutableList()
                         generateAllPossibleRates()
                     }
                 }
@@ -69,50 +73,62 @@ class ExchangeRatesViewModel @Inject constructor(
      *  It will be treated as is and will not be highlighted
      */
 
+    private var listRates: MutableList<ExchangeRates.Rate> = mutableListOf()
+    private var newListRates = listRates
+    var isListUpdated = true
 
     private suspend fun generateAllPossibleRates() {
 
-        var isListUpdated = true
-
-        val listRates: MutableList<ExchangeRates.Rate> =
-            exchangeRatesResponse.value?.rates?.toMutableList() ?: mutableListOf()
-
         while (isListUpdated) {
-            isListUpdated = reiterateTroughList( listRates)
+            reiterateTroughList()
+            w("ListSize = ${listRates.size}")
+            w("isListUpdated = $isListUpdated")
+            delay(500)
         }
 
         mapPairsWithNewRatesList(listRates)
     }
 
-    private fun reiterateTroughList( listRates: MutableList<ExchangeRates.Rate>): Boolean {
-        var isListUpdated = false
+    private fun reiterateTroughList() {
 
-        for (oldRates in exchangeRatesResponse.value!!.rates) {
+        for (oldRates in listRates) {
+
             val oldTriple = Triple(oldRates.from, oldRates.to, oldRates.rate)
-            for (newRates in exchangeRatesResponse.value!!.rates) {
+
+            for (newRates in listRates) {
+
                 var newRate = ""
                 val newTriple = Triple(newRates.from, newRates.to, newRates.rate)
-                if (oldTriple.first == newTriple.second && oldTriple.second != newTriple.first) {
-                    newRate = String.format(
-                        "%.2f",
-                        oldTriple.third.toDouble() * newTriple.third.toDouble()
-                    ).toString()
-                    e("===>   |  new Rate = $newRate for ${oldTriple.second} to ${newTriple.first}")
-                    listRates.add(ExchangeRates.Rate(oldTriple.second, newTriple.first, newRate))
-                    isListUpdated = true
+
+                try {
+                    if (oldTriple.first == newTriple.second && oldTriple.second != newTriple.first) {
+                        newRate = String.format(
+                            Locale.CANADA,
+                            "%.2f",
+                            oldTriple.third.toDouble() * newTriple.third.toDouble()
+                        ).toString()
+                        e("===>   |  new Rate = $newRate for ${oldTriple.second} to ${newTriple.first}")
+                        newListRates.add(ExchangeRates.Rate(oldTriple.second, newTriple.first, newRate))
+                    }
+                    if (oldTriple.second == newTriple.first && oldTriple.first != newTriple.second) {
+                        newRate = String.format(
+                            Locale.CANADA,
+                            "%.2f",
+                            oldTriple.third.toDouble() * newTriple.third.toDouble()
+                        )
+                        e("===>    || new Rate = $newRate for ${newTriple.second} to ${oldTriple.first}")
+                        newListRates.add(ExchangeRates.Rate(newTriple.second, oldTriple.first, newRate))
+                    }
+                    if (newListRates.size == listRates.size) {
+                        isListUpdated = false
+                    }
+                } catch (e: NumberFormatException) {
+                    e(e)
                 }
-                if (oldTriple.second == newTriple.first && oldTriple.first != newTriple.second) {
-                    newRate = String.format(
-                        "%.2f",
-                        oldTriple.third.toDouble() * newTriple.third.toDouble()
-                    )
-                    e("===>    || new Rate = $newRate for ${newTriple.second} to ${oldTriple.first}")
-                    listRates.add(ExchangeRates.Rate(newTriple.second, oldTriple.first, newRate))
-                    isListUpdated = true
-                }
+
             }
         }
-        return isListUpdated
+        listRates += newListRates
     }
 
     private suspend fun mapPairsWithNewRatesList(listRates: List<ExchangeRates.Rate>) {
