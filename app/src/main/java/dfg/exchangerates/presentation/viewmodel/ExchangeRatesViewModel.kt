@@ -31,18 +31,28 @@ class ExchangeRatesViewModel @Inject constructor(
     init {
         getExchangeRates()
         getExchangePairs()
+        isDataLoading()
     }
 
 
     private val exchangePairsResponse = MutableLiveData<ExchangeRates.Pairs>()
     val exchangePairsWithRate = MutableLiveData<List<ExchangeRates.Rate>>()
+    val isLoading = MutableLiveData<Boolean>()
 
-    fun getExchangeRates() {
+    private fun isDataLoading() {
+        isLoading.value = false
+        while (exchangePairsResponse.value == null) {
+            isLoading.value = true
+        }
+    }
+
+    private fun getExchangeRates() {
         try {
             viewModelScope.launch(IO) {
                 getExchangeRatesUseCase.execute()?.let {
                     viewModelScope.launch(Main) {
                         listOfExchangeRates = it.rates.toMutableList()
+                        isLoading.value = true
                         getCurrencyListSize()
                         generateAllPossibleRates()
                     }

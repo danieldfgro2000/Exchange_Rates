@@ -36,16 +36,14 @@ class MainActivity : AppCompatActivity() {
         mExchangeRatesViewModel = ViewModelProvider(this)
                 .get(ExchangeRatesViewModel::class.java)
 
+        mBinding.viewModel = mExchangeRatesViewModel
+
         hideRecyclerView()
 
         mExchangeRatesViewModel.exchangePairsWithRate.observe(this){
             initRecyclerView()
             showRecyclerView()
             exchangeRatesAdapter.differ.submitList(it)
-        }
-
-        mBinding.button.setOnClickListener {
-            mExchangeRatesViewModel.getExchangeRates()
         }
     }
 
