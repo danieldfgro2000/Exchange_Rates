@@ -1,4 +1,4 @@
-package dfg.exchangerates
+package dfg.exchangerates.presentation.ui.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -6,20 +6,12 @@ import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
-import dfg.exchangerates.data.model.ExchangeRates
+import dfg.exchangerates.R
 import dfg.exchangerates.databinding.ActivityMainBinding
 import dfg.exchangerates.presentation.adapter.ExchangeRatesAdapter
 import dfg.exchangerates.presentation.viewmodel.ExchangeRatesViewModel
-import org.json.JSONObject
-import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
-import timber.log.Timber.Forest.e
-import java.lang.Exception
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -50,6 +42,10 @@ class MainActivity : AppCompatActivity() {
             initRecyclerView()
             showRecyclerView()
             exchangeRatesAdapter.differ.submitList(it)
+        }
+
+        mBinding.button.setOnClickListener {
+            mExchangeRatesViewModel.getExchangeRates()
         }
     }
 
