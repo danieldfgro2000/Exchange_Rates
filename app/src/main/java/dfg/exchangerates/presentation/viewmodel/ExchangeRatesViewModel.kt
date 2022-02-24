@@ -90,6 +90,7 @@ class ExchangeRatesViewModel @Inject constructor(
      */
 
     private var listOfExchangeRates: MutableList<ExchangeRates.Rate> = mutableListOf()
+    private val temporaryListOfExchangeRates = mutableListOf<ExchangeRates.Rate>()
 
     private suspend fun generateAllPossibleRates() {
         var count = 0
@@ -104,26 +105,28 @@ class ExchangeRatesViewModel @Inject constructor(
 
     private fun generateNewRates() {
 
-        val temporaryListOfExchangeRates = mutableListOf<ExchangeRates.Rate>()
-
-        for (oldRates in listOfExchangeRates) {
+        listOfExchangeRates.forEach { oldRates ->
 
             val oldTriple = Triple(oldRates.from, oldRates.to, oldRates.rate)
+            i("oldTriple = $oldTriple")
 
-            for (newRates in listOfExchangeRates) {
+            listOfExchangeRates.forEach { newRates ->
 
-                var newRate: String
                 val newTriple = Triple(newRates.from, newRates.to, newRates.rate)
 
                 try {
                     if (oldTriple.second == newTriple.first
                         && oldTriple.first != newTriple.second) {
-
-                        newRate = ( oldTriple.third.toBigDecimal() * newTriple.third.toBigDecimal())
+                        i("newTriple = $newTriple")
+                        val newRate = ( oldTriple.third.toBigDecimal() * newTriple.third.toBigDecimal())
                             .setScale(2, RoundingMode.HALF_UP).toString()
 
-                        temporaryListOfExchangeRates
-                            .add(ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate ))
+                        if(!isAlreadyInserted(oldTriple.first, newTriple.second)) {
+                            w("Inserting :: ${ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate )}")
+                            temporaryListOfExchangeRates
+                                .add(ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate ))
+                        }
+
                     }
                 } catch (e: NumberFormatException) {
                     e(e)
@@ -133,6 +136,27 @@ class ExchangeRatesViewModel @Inject constructor(
 
         listOfExchangeRates = listOfExchangeRates
             .union(temporaryListOfExchangeRates.distinct()).toMutableList()
+    }
+
+    private fun isAlreadyInserted (fromCurrency: String, toCurrency: String) : Boolean {
+        var isAlreadyInserted = false
+//        w("isAlreadyInserted = $isAlreadyInserted")
+        temporaryListOfExchangeRates.forEach { rate ->
+            e("rate = $rate")
+            isAlreadyInserted = rate.from == fromCurrency && rate.to == toCurrency
+//            w("isAlreadyInserted = $isAlreadyInserted")
+        }
+        if (!isAlreadyInserted) {
+//            w("isAlreadyInserted = $isAlreadyInserted")
+            listOfExchangeRates.forEach { rate ->
+                if (rate.from == fromCurrency && rate.to == toCurrency) {
+                    isAlreadyInserted = true
+
+                }
+            }
+//            w("isAlreadyInserted = $isAlreadyInserted")
+        }
+        return isAlreadyInserted
     }
 
     private suspend fun mapPairsWithNewRatesList(listRates: List<ExchangeRates.Rate>) {
