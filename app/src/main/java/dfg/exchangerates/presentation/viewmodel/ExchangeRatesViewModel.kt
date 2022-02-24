@@ -48,8 +48,9 @@ class ExchangeRatesViewModel @Inject constructor(
                 getExchangeRatesUseCase.execute()?.let {
                     viewModelScope.launch(Main) {
                         listRates = it.rates.toMutableList()
-                        isListUpdated = true
+                        getCurrencyListSize()
                         generateAllPossibleRates()
+
                     }
                 }
             }
@@ -57,6 +58,10 @@ class ExchangeRatesViewModel @Inject constructor(
             e(e)
         }
     }
+
+    /**
+     *  1st pair is identical with 4th pair (retrieved from API)
+     */
 
     private fun getExchangePairs() {
         try {
@@ -72,6 +77,16 @@ class ExchangeRatesViewModel @Inject constructor(
         }
     }
 
+    private fun getCurrencyListSize() : Int {
+        val list: MutableList<String> = mutableListOf()
+        for (currency in listRates) {
+            if (!list.contains(currency.from)) list.add(currency.from)
+            if (!list.contains(currency.to)) list.add(currency.to)
+        }
+        i("Currency list size = ${list.size}")
+        return list.size - 3
+    }
+
     /**
      *
      * Observe that some currencies have inverse transformation (received from API) :
@@ -82,17 +97,14 @@ class ExchangeRatesViewModel @Inject constructor(
 
     private var listRates: MutableList<ExchangeRates.Rate> = mutableListOf()
 
-    var isListUpdated = true
-
     private suspend fun generateAllPossibleRates() {
-
-        while (isListUpdated) {
+        var count = 0
+        while (count < getCurrencyListSize()) {
+            count ++
             reiterateTroughList()
             w("ListSize = ${listRates.size}")
-            w("isListUpdated = $isListUpdated")
             delay(500)
         }
-
         mapPairsWithNewRatesList(listRates)
     }
 
@@ -111,14 +123,11 @@ class ExchangeRatesViewModel @Inject constructor(
                 val newTriple = Triple(newRates.from, newRates.to, newRates.rate)
 
                 try {
-                    if (oldTriple.second == newTriple.first && oldTriple.first != newTriple.second) {
+                    if (oldTriple.second == newTriple.first
+                        && oldTriple.first != newTriple.second) {
 
-                        newRate = (
-                                        oldTriple.third.toBigDecimal()
-                                            .setScale(2, RoundingMode.HALF_EVEN) *
-                                        newTriple.third.toBigDecimal()
-                                            .setScale(2, RoundingMode.HALF_EVEN)
-                                    ).setScale(2, RoundingMode.HALF_EVEN).toString()
+                        newRate = ( oldTriple.third.toBigDecimal() * newTriple.third.toBigDecimal())
+                            .setScale(2, RoundingMode.HALF_EVEN).toString()
 
                         w("newRate = $newRate")
                         newTransformation = ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate )
@@ -130,17 +139,7 @@ class ExchangeRatesViewModel @Inject constructor(
             }
         }
         w("newListRates.size = ${newListRates.size} =|||= listRates.size = ${listRates.size}")
-        if (newListRates.size == 0) {
-            isListUpdated = false
-        }
-        if (newListRates.size > 40) isListUpdated = false
         listRates = listRates.union(newListRates.distinct()).toMutableList()
-    }
-
-    private fun Double.round(decimals: Int) : Double {
-        var multiplier = 1.0
-        repeat(decimals) { multiplier *= 10}
-        return round(this * multiplier) / multiplier
     }
 
     private suspend fun mapPairsWithNewRatesList(listRates: List<ExchangeRates.Rate>) {
