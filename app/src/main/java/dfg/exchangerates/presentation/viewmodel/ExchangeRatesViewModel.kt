@@ -103,8 +103,6 @@ class ExchangeRatesViewModel @Inject constructor(
         while (count < getCurrencyListSize()) {
             count ++
             generateNewRates()
-            w("ListSize = ${listOfExchangeRates.size}")
-            delay(500)
         }
         mapPairsWithNewRatesList(listOfExchangeRates)
     }
