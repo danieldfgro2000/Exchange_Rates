@@ -13,18 +13,13 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber.Forest.d
 import timber.log.Timber.Forest.e
 import timber.log.Timber.Forest.i
 import timber.log.Timber.Forest.w
 import java.io.IOException
 import java.lang.NumberFormatException
 import java.math.RoundingMode
-import java.util.*
 import javax.inject.Inject
-import kotlin.math.round
-import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 
 @HiltViewModel
 class ExchangeRatesViewModel @Inject constructor(
@@ -47,10 +42,9 @@ class ExchangeRatesViewModel @Inject constructor(
             viewModelScope.launch(IO) {
                 getExchangeRatesUseCase.execute()?.let {
                     viewModelScope.launch(Main) {
-                        listRates = it.rates.toMutableList()
+                        listOfExchangeRates = it.rates.toMutableList()
                         getCurrencyListSize()
                         generateAllPossibleRates()
-
                     }
                 }
             }
@@ -79,12 +73,12 @@ class ExchangeRatesViewModel @Inject constructor(
 
     private fun getCurrencyListSize() : Int {
         val list: MutableList<String> = mutableListOf()
-        for (currency in listRates) {
+        for (currency in listOfExchangeRates) {
             if (!list.contains(currency.from)) list.add(currency.from)
             if (!list.contains(currency.to)) list.add(currency.to)
         }
         i("Currency list size = ${list.size}")
-        return list.size - 3
+        return list.size
     }
 
     /**
@@ -95,31 +89,30 @@ class ExchangeRatesViewModel @Inject constructor(
      *  It will be treated as is and will not be highlighted
      */
 
-    private var listRates: MutableList<ExchangeRates.Rate> = mutableListOf()
+    private var listOfExchangeRates: MutableList<ExchangeRates.Rate> = mutableListOf()
 
     private suspend fun generateAllPossibleRates() {
         var count = 0
         while (count < getCurrencyListSize()) {
             count ++
-            reiterateTroughList()
-            w("ListSize = ${listRates.size}")
+            generateNewRates()
+            w("ListSize = ${listOfExchangeRates.size}")
             delay(500)
         }
-        mapPairsWithNewRatesList(listRates)
+        mapPairsWithNewRatesList(listOfExchangeRates)
     }
 
-    private fun reiterateTroughList() {
+    private fun generateNewRates() {
 
-        val newListRates = mutableListOf<ExchangeRates.Rate>()
+        val temporaryListOfExchangeRates = mutableListOf<ExchangeRates.Rate>()
 
-        for (oldRates in listRates) {
+        for (oldRates in listOfExchangeRates) {
 
             val oldTriple = Triple(oldRates.from, oldRates.to, oldRates.rate)
 
-            for (newRates in listRates) {
+            for (newRates in listOfExchangeRates) {
 
                 var newRate: String
-                var newTransformation: ExchangeRates.Rate
                 val newTriple = Triple(newRates.from, newRates.to, newRates.rate)
 
                 try {
@@ -127,19 +120,19 @@ class ExchangeRatesViewModel @Inject constructor(
                         && oldTriple.first != newTriple.second) {
 
                         newRate = ( oldTriple.third.toBigDecimal() * newTriple.third.toBigDecimal())
-                            .setScale(2, RoundingMode.HALF_EVEN).toString()
+                            .setScale(2, RoundingMode.HALF_UP).toString()
 
-                        w("newRate = $newRate")
-                        newTransformation = ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate )
-                        if (!newListRates.contains(newTransformation)) newListRates.add(newTransformation)
+                        temporaryListOfExchangeRates
+                            .add(ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate ))
                     }
                 } catch (e: NumberFormatException) {
                     e(e)
                 }
             }
         }
-        w("newListRates.size = ${newListRates.size} =|||= listRates.size = ${listRates.size}")
-        listRates = listRates.union(newListRates.distinct()).toMutableList()
+
+        listOfExchangeRates = listOfExchangeRates
+            .union(temporaryListOfExchangeRates.distinct()).toMutableList()
     }
 
     private suspend fun mapPairsWithNewRatesList(listRates: List<ExchangeRates.Rate>) {
