@@ -31,9 +31,7 @@ class ExchangeRatesViewModel @Inject constructor(
     init {
         getExchangeRates()
         getExchangePairs()
-
     }
-
 
     private val exchangePairsResponse = MutableLiveData<ExchangeRates.Pairs>()
     val exchangePairsWithRate = MutableLiveData<List<ExchangeRates.Rate>>()
@@ -61,6 +59,8 @@ class ExchangeRatesViewModel @Inject constructor(
 
     /**
      *  1st pair is identical with 4th pair (retrieved from API)
+     *
+     *      skipping duplicates ( hence list size = 9 <not 10>)
      */
 
     private fun getExchangePairs() {
@@ -92,7 +92,7 @@ class ExchangeRatesViewModel @Inject constructor(
      * Observe that some currencies have inverse transformation (received from API) :
      *      ex: AUD to USD is 1.37 (should be 0.73)
      *
-     *  It will be treated as is and will not be highlighted
+     *  It will be treated as is and it will not be highlighted
      */
 
     private var listOfExchangeRates: MutableList<ExchangeRates.Rate> = mutableListOf()
