@@ -13,7 +13,9 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber.Forest.d
 import timber.log.Timber.Forest.e
+import timber.log.Timber.Forest.i
 import timber.log.Timber.Forest.w
 import java.io.IOException
 import java.lang.NumberFormatException
@@ -75,7 +77,7 @@ class ExchangeRatesViewModel @Inject constructor(
      */
 
     private var listRates: MutableList<ExchangeRates.Rate> = mutableListOf()
-    private var newListRates = listRates
+
     var isListUpdated = true
 
     private suspend fun generateAllPossibleRates() {
@@ -92,47 +94,66 @@ class ExchangeRatesViewModel @Inject constructor(
 
     private fun reiterateTroughList() {
 
+        val newListRates = mutableListOf<ExchangeRates.Rate>()
+
         for (oldRates in listRates) {
 
             val oldTriple = Triple(oldRates.from, oldRates.to, oldRates.rate)
-
+            d("oldTriple = $oldTriple")
             for (newRates in listRates) {
 
                 var newRate = ""
+                var newTransformation = ExchangeRates.Rate("", "", "")
                 val newTriple = Triple(newRates.from, newRates.to, newRates.rate)
 
                 try {
-                    if (oldTriple.first == newTriple.second && oldTriple.second != newTriple.first) {
-                        newRate = String.format(
-                            Locale.CANADA,
-                            "%.2f",
-                            oldTriple.third.toDouble() * newTriple.third.toDouble()
-                        ).toString()
-                        e("===>   |  new Rate = $newRate for ${oldTriple.second} to ${newTriple.first}")
-                        newListRates.add(ExchangeRates.Rate(oldTriple.second, newTriple.first, newRate))
-                    }
+//                    if (oldTriple.first == newTriple.second && oldTriple.second != newTriple.first) {
+//                        i("newTriple = $newTriple")
+//                        newRate = String.format(
+//                            Locale.CANADA,
+//                            "%.2f",
+//
+//
+//                            oldTriple.third.toDouble() * newTriple.third.toDouble()
+//
+//
+//                        )
+//                        e("===>   |  new Rate = $newRate from ${oldTriple.second} to ${newTriple.first}")
+//                        newTransformation = ExchangeRates.Rate( oldTriple.second, newTriple.first, newRate)
+//                        if (!newListRates.contains(newTransformation)) newListRates.add(newTransformation)
+//
+//                        e("newlistRates size = ${newListRates.size}")
+//                    }
                     if (oldTriple.second == newTriple.first && oldTriple.first != newTriple.second) {
+                        i("newTriple = $newTriple")
                         newRate = String.format(
                             Locale.CANADA,
                             "%.2f",
+
+
                             oldTriple.third.toDouble() * newTriple.third.toDouble()
+
+
                         )
-                        e("===>    || new Rate = $newRate for ${newTriple.second} to ${oldTriple.first}")
-                        newListRates.add(ExchangeRates.Rate(newTriple.second, oldTriple.first, newRate))
+                        e("===>    || new Rate = $newRate from ${newTriple.second} to ${oldTriple.first}")
+
+                        newTransformation = ExchangeRates.Rate( newTriple.second, oldTriple.first, newRate )
+                        if (!newListRates.contains(newTransformation)) newListRates.add(newTransformation)
+
+                        e("newlistRates size = ${newListRates.size}")
                     }
 
                 } catch (e: NumberFormatException) {
                     e(e)
                 }
-
             }
         }
         w("newListRates.size = ${newListRates.size} =|||= listRates.size = ${listRates.size}")
-        if (newListRates.size == listRates.size) {
+        if (newListRates.size == 0) {
             isListUpdated = false
         }
         if (newListRates.size > 50) isListUpdated = false
-        listRates = listRates.union(newListRates).toMutableList()
+        listRates = listRates.union(newListRates.distinct()).toMutableList()
     }
 
     private suspend fun mapPairsWithNewRatesList(listRates: List<ExchangeRates.Rate>) {
