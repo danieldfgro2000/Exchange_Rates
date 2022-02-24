@@ -42,6 +42,7 @@ class ExchangeRatesViewModel @Inject constructor(
                 getExchangeRatesUseCase.execute()?.let {
                     viewModelScope.launch(Main) {
                         listRates = it.rates.toMutableList()
+                        isListUpdated = true
                         generateAllPossibleRates()
                     }
                 }
@@ -119,16 +120,19 @@ class ExchangeRatesViewModel @Inject constructor(
                         e("===>    || new Rate = $newRate for ${newTriple.second} to ${oldTriple.first}")
                         newListRates.add(ExchangeRates.Rate(newTriple.second, oldTriple.first, newRate))
                     }
-                    if (newListRates.size == listRates.size) {
-                        isListUpdated = false
-                    }
+
                 } catch (e: NumberFormatException) {
                     e(e)
                 }
 
             }
         }
-        listRates += newListRates
+        w("newListRates.size = ${newListRates.size} =|||= listRates.size = ${listRates.size}")
+        if (newListRates.size == listRates.size) {
+            isListUpdated = false
+        }
+        if (newListRates.size > 50) isListUpdated = false
+        listRates = listRates.union(newListRates).toMutableList()
     }
 
     private suspend fun mapPairsWithNewRatesList(listRates: List<ExchangeRates.Rate>) {
