@@ -14,7 +14,7 @@ import org.w3c.dom.Text
 class ExchangeRatesAdapter : RecyclerView.Adapter<ExchangeRatesAdapter.ItemViewHolder>() {
 
     inner class ItemViewHolder(binding: ViewItemBinding) : RecyclerView.ViewHolder(binding.root) {
-
+        val count: TextView = binding.count
         val from: TextView = binding.from
         val to: TextView = binding.to
         val rate: TextView = binding.rate
@@ -39,6 +39,7 @@ class ExchangeRatesAdapter : RecyclerView.Adapter<ExchangeRatesAdapter.ItemViewH
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val item = differ.currentList[position]
+        holder.count.text = (position + 1).toString()
         holder.from.text = item.from
         holder.to.text = item.to
         holder.rate.text = item.rate
