@@ -125,8 +125,7 @@ class ExchangeRatesViewModel @Inject constructor(
                             w("Inserting :: ${ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate )}")
                             temporaryListOfExchangeRates
                                 .add(ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate ))
-                        }
-
+                        } else e("Skipping")
                     }
                 } catch (e: NumberFormatException) {
                     e(e)
