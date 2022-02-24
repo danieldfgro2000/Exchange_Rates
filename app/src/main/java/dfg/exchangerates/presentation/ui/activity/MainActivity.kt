@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
                 .get(ExchangeRatesViewModel::class.java)
 
         mBinding.viewModel = mExchangeRatesViewModel
+        mBinding.lifecycleOwner = this
 
         hideRecyclerView()
 
