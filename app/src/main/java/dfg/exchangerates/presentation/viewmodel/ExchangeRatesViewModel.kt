@@ -19,8 +19,10 @@ import timber.log.Timber.Forest.i
 import timber.log.Timber.Forest.w
 import java.io.IOException
 import java.lang.NumberFormatException
+import java.math.RoundingMode
 import java.util.*
 import javax.inject.Inject
+import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
@@ -111,12 +113,13 @@ class ExchangeRatesViewModel @Inject constructor(
                 try {
                     if (oldTriple.second == newTriple.first && oldTriple.first != newTriple.second) {
 
-                        newRate = String.format(
-                            Locale.CANADA, // do not replace dot with comma
-                            "%.2f",
-                            (((oldTriple.third.toDouble() * newTriple.third.toDouble()) *
-                                    100).roundToInt()).toDouble()/100
-                        )
+                        newRate = (
+                                        oldTriple.third.toBigDecimal()
+                                            .setScale(2, RoundingMode.HALF_EVEN) *
+                                        newTriple.third.toBigDecimal()
+                                            .setScale(2, RoundingMode.HALF_EVEN)
+                                    ).setScale(2, RoundingMode.HALF_EVEN).toString()
+
                         w("newRate = $newRate")
                         newTransformation = ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate )
                         if (!newListRates.contains(newTransformation)) newListRates.add(newTransformation)
@@ -130,8 +133,14 @@ class ExchangeRatesViewModel @Inject constructor(
         if (newListRates.size == 0) {
             isListUpdated = false
         }
-        if (newListRates.size > 20) isListUpdated = false
+        if (newListRates.size > 40) isListUpdated = false
         listRates = listRates.union(newListRates.distinct()).toMutableList()
+    }
+
+    private fun Double.round(decimals: Int) : Double {
+        var multiplier = 1.0
+        repeat(decimals) { multiplier *= 10}
+        return round(this * multiplier) / multiplier
     }
 
     private suspend fun mapPairsWithNewRatesList(listRates: List<ExchangeRates.Rate>) {
