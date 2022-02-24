@@ -140,22 +140,21 @@ class ExchangeRatesViewModel @Inject constructor(
 
     private fun isAlreadyInserted (fromCurrency: String, toCurrency: String) : Boolean {
         var isAlreadyInserted = false
-//        w("isAlreadyInserted = $isAlreadyInserted")
-        temporaryListOfExchangeRates.forEach { rate ->
-            e("rate = $rate")
-            isAlreadyInserted = rate.from == fromCurrency && rate.to == toCurrency
-//            w("isAlreadyInserted = $isAlreadyInserted")
+
+        listOfExchangeRates.forEach { rate ->
+            if (rate.from == fromCurrency && rate.to == toCurrency) {
+                isAlreadyInserted = true
+            }
         }
+
         if (!isAlreadyInserted) {
-//            w("isAlreadyInserted = $isAlreadyInserted")
-            listOfExchangeRates.forEach { rate ->
+            temporaryListOfExchangeRates.forEach { rate ->
                 if (rate.from == fromCurrency && rate.to == toCurrency) {
                     isAlreadyInserted = true
-
                 }
             }
-//            w("isAlreadyInserted = $isAlreadyInserted")
         }
+
         return isAlreadyInserted
     }
 
