@@ -21,6 +21,8 @@ import java.io.IOException
 import java.lang.NumberFormatException
 import java.util.*
 import javax.inject.Inject
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 @HiltViewModel
 class ExchangeRatesViewModel @Inject constructor(
@@ -99,33 +101,26 @@ class ExchangeRatesViewModel @Inject constructor(
         for (oldRates in listRates) {
 
             val oldTriple = Triple(oldRates.from, oldRates.to, oldRates.rate)
-            d("oldTriple = $oldTriple")
+
             for (newRates in listRates) {
 
-                var newRate = ""
+                var newRate: String
                 var newTransformation: ExchangeRates.Rate
                 val newTriple = Triple(newRates.from, newRates.to, newRates.rate)
 
                 try {
                     if (oldTriple.second == newTriple.first && oldTriple.first != newTriple.second) {
-                        i("newTriple = $newTriple")
+
                         newRate = String.format(
-                            Locale.CANADA,
+                            Locale.CANADA, // do not replace dot with comma
                             "%.2f",
-
-
-                            (oldTriple.third.toDouble() * newTriple.third.toDouble())
-
-
+                            (((oldTriple.third.toDouble() * newTriple.third.toDouble()) *
+                                    100).roundToInt()).toDouble()/100
                         )
-                        e("===>    || new Rate = $newRate from  ${oldTriple.first} to ${newTriple.second}")
-
+                        w("newRate = $newRate")
                         newTransformation = ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate )
                         if (!newListRates.contains(newTransformation)) newListRates.add(newTransformation)
-
-                        e("newlistRates size = ${newListRates.size}")
                     }
-
                 } catch (e: NumberFormatException) {
                     e(e)
                 }
@@ -135,7 +130,7 @@ class ExchangeRatesViewModel @Inject constructor(
         if (newListRates.size == 0) {
             isListUpdated = false
         }
-        if (newListRates.size > 50) isListUpdated = false
+        if (newListRates.size > 20) isListUpdated = false
         listRates = listRates.union(newListRates.distinct()).toMutableList()
     }
 
