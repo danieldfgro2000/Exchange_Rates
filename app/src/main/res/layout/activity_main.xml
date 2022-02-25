@@ -14,54 +14,15 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
-            android:id="@+id/linearLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:visibility="@{viewModel.isLoading() ? View.GONE : View.VISIBLE}"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/framLayout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.5"
-                android:text="@string/from"
-                android:textSize="18sp"
-                android:textAlignment="textEnd"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/to"
-                android:textSize="18sp"
-                android:textAlignment="center"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/rate"
-                android:textSize="18sp"
-                android:textAlignment="center"
-                android:textStyle="bold"/>
-        </LinearLayout>
+        android:layout_height="match_parent"
+        android:padding="10dp">
 
         <FrameLayout
             android:id="@+id/framLayout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-            app:layout_constraintBottom_toTopOf="@+id/progressBar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             tools:context=".presentation.ui.activity.MainActivity">
@@ -73,27 +34,24 @@
                 app:layoutManager="LinearLayoutManager"
                 tools:listitem="@layout/view_item"/>
 
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                android:visibility="@{viewModel.isLoading() ? View.VISIBLE : View.GONE}"
+                />
+
             <TextView
-                android:id="@+id/tv_no_records_available"
+                android:id="@+id/loading"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="@string/no_records_available"
+                android:text="@string/loading"
                 android:gravity="center"
-                android:textSize="24sp"
-                tools:visibility="invisible" />
+                android:textSize="20sp"
+                tools:visibility="visible" />
 
         </FrameLayout>
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginBottom="30dp"
-            android:visibility="@{viewModel.isLoading() ? View.VISIBLE : View.GONE}"
-            app:layout_constraintTop_toBottomOf="@+id/framLayout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -59,14 +59,14 @@ class MainActivity : AppCompatActivity() {
     private fun showRecyclerView() {
         with(mBinding){
             rvItemsList.visibility = View.VISIBLE
-            tvNoRecordsAvailable.visibility = View.GONE
+            loading.visibility = View.GONE
         }
     }
 
     private fun hideRecyclerView() {
         with(mBinding) {
             rvItemsList.visibility = View.GONE
-            tvNoRecordsAvailable.visibility = View.VISIBLE
+            loading.visibility = View.VISIBLE
         }
 
     }
