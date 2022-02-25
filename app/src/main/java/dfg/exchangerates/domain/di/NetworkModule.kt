@@ -49,12 +49,4 @@ class NetworkModule {
             .build()
         return retrofit.create(ExchangeRatesAPI::class.java)
     }
-
-
-
-    @Singleton
-    @Provides
-    fun provideGson(): Gson {
-        return GsonBuilder().create()
-    }
 }
