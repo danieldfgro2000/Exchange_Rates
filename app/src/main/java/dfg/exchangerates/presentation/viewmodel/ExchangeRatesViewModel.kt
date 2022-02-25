@@ -83,7 +83,6 @@ class ExchangeRatesViewModel @Inject constructor(
             if (!list.contains(currency.from)) list.add(currency.from)
             if (!list.contains(currency.to)) list.add(currency.to)
         }
-        i("Currency list size = ${list.size}")
         return list.size
     }
 
@@ -112,7 +111,6 @@ class ExchangeRatesViewModel @Inject constructor(
         listOfExchangeRates.forEach { oldRates ->
 
             val oldTriple = Triple(oldRates.from, oldRates.to, oldRates.rate)
-            i("oldTriple = $oldTriple")
 
             listOfExchangeRates.forEach { newRates ->
 
@@ -121,15 +119,14 @@ class ExchangeRatesViewModel @Inject constructor(
                 try {
                     if (oldTriple.second == newTriple.first
                         && oldTriple.first != newTriple.second) {
-                        i("newTriple = $newTriple")
+
                         val newRate = ( oldTriple.third.toBigDecimal() * newTriple.third.toBigDecimal())
                             .setScale(2, RoundingMode.HALF_UP).toString()
 
                         if(!isAlreadyInserted(oldTriple.first, newTriple.second)) {
-                            w("Inserting :: ${ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate )}")
                             temporaryListOfExchangeRates
                                 .add(ExchangeRates.Rate(oldTriple.first, newTriple.second,  newRate ))
-                        } else e("Skipping")
+                        }
                     }
                 } catch (e: NumberFormatException) {
                     e(e)
@@ -180,6 +177,5 @@ class ExchangeRatesViewModel @Inject constructor(
             awaitForServer(exchangePairsResponse.value == null)
         }
         exchangePairsWithRate.value = exchangePairWithRatesList.distinct()
-        e("exchangePairsWithRate size = ${exchangePairsWithRate.value?.size}")
     }
 }
